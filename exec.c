@@ -13,18 +13,18 @@ exec(char *path, char **argv)
   char *s, *last;
   int i, off;
   uint argc, sz, sp, ustack[3+MAXARG+1];
-  struct elfhdr elf;
-  struct inode *ip;
-  struct proghdr ph;
-  pde_t *pgdir, *oldpgdir;
+  struct elfhdr elf;  //A file header instance.
+  struct inode *ip;   
+  struct proghdr ph;  //A program section header
+  pde_t *pgdir, *oldpgdir;  //pde_t = uint
 
-  if((ip = namei(path)) == 0)
+  if((ip = namei(path)) == 0) //namei: get the path's i-node.
     return -1;
   ilock(ip);
   pgdir = 0;
 
   // Check ELF header
-  if(readi(ip, (char*)&elf, 0, sizeof(elf)) < sizeof(elf))
+  if(readi(ip, (char*)&elf, 0, sizeof(elf)) < sizeof(elf))  //readi: read data from inode
     goto bad;
   if(elf.magic != ELF_MAGIC)
     goto bad;
