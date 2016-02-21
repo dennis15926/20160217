@@ -4,6 +4,7 @@
 
 int
 main(int argc, char *argv[]){
-	pointer();
-	exit();
+	int *p = 0;
+	*p = 5;
+	return 0;
 }

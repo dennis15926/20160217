@@ -460,9 +460,7 @@ int
 pointer(void)
 {
   int *p = 0;
-  int a = 5;
   *p = 5;
-  a = *p;
-  cprintf("%d\n", a);
-  return 2;
+  cprintf("%d\n", *p);
+  return 0;
 }
