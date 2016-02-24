@@ -459,8 +459,8 @@ procdump(void)
 int
 pointer(void)
 {
-  int *p = 0;
-  *p = 5;
-  cprintf("%d\n", *p);
+  // int *p = 0;
+  // *p = 5;
+  // cprintf("%d\n", *p);
   return 0;
 }

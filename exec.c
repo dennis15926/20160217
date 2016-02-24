@@ -33,10 +33,10 @@ exec(char *path, char **argv)
     goto bad;
 
   // Load program into memory.
-  sz = 0;
+  sz = PGSIZE;
 
-  if((sz = allocuvm(pgdir, sz, PGSIZE)) == 0)
-    goto bad;
+  // if((sz = allocuvm(pgdir, sz, PGSIZE)) == 0)
+  //   goto bad;
 
   for(i=0, off=elf.phoff; i<elf.phnum; i++, off+=sizeof(ph)){
     if(readi(ip, (char*)&ph, off, sizeof(ph)) != sizeof(ph))
