@@ -162,7 +162,8 @@ fork(void)
 
 // Create a new thread as a different process, but
 // sharing address spaces and with p as the parent.
-// Sets up stack to return as if from system call.
+// Stack should already be built, with stack being
+// top of stack, stack-size where esp should be
 int
 clone(void *stack, int size)
 {
@@ -183,8 +184,8 @@ clone(void *stack, int size)
   np->tf->eax = 0;
 
 
-  //Copy user stack TODO
-  
+  //Set user stack
+  np->tf->esp = (uint)stack-size;
 
 
   //file descriptors
