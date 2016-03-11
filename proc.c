@@ -162,8 +162,10 @@ fork(void)
 
 // Create a new thread as a different process, but
 // sharing address spaces and with p as the parent.
-// Stack should already be built, with stack being
-// top of stack, stack-size where esp should be
+// Stack is already allocated with pointer to the 
+// start(lowest). Parent's stack up to the function
+// calling this will be copied. This only works with thread_create for now
+// (Or any other function with only two parameters)
 int
 clone(void *stack, int size)
 {
@@ -186,19 +188,18 @@ clone(void *stack, int size)
 
   //Set user stack
   np->tf->esp = (uint)stack-size;
-  //TODO might need to copy parent stack of current function
   
-  //calculate stack size(from function arg #n to esp)
-  uint stackSize = *(uint *)proc->tf->ebp - proc->tf->esp;
-  //move stack pointer to bottom of trapframe
-  np->tf->esp = (uint)stack+size - stackSize;
-  //calculate size needed above ebp
-  uint topSize = *(uint *)proc->tf->ebp - proc->tf->ebp;
-  //move base pointer below topsize
-  np->tf->ebp = (uint)stack+size - topSize;
+/***copy thread_creation stack stuff including parameters to child stack***/
+  //calculate stack size(from thread_create parameter 2 to now
+  uint stackSize = proc->tf->ebp - proc->tf->esp + 16;
+  //set stack pointer to "stackSize" from top
+  np->tf->esp = (uint)stack + size - stackSize;
+  //set base pointer
+  np->tf->ebp = (uint)stack + size - 16;
   //copy parent processee's stack to child
   memmove((void *)(np->tf->esp),(const void *)(proc->tf->esp), stackSize);
-  
+/**end thread copy part***/  
+
   //file descriptors
   for(i = 0; i < NOFILE; i++)
     if(proc->ofile[i])

@@ -12,7 +12,7 @@ void* update(void* a) {
   printf(1, "current count = %d\n", count);
   int pid = getpid();
   printf(1, "pid %d try to update\n", pid);
-  while(count < passNumber){
+  while(1){
     lock_acquire(&t);
       if(count>=passNumber){
         lock_release(&t);
