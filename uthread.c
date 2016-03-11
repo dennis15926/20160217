@@ -13,7 +13,6 @@ int thread_create(void *(*start_routine)(void*), void *arg){
   if(t_pid == 0){
     (*start_routine)(arg);
     free(stack);
-    printf(1,"here\n");
     exit();
   }
   else
@@ -31,6 +30,6 @@ void lock_acquire(lock_t *lck){
 }
 
 void lock_release(lock_t * lck){
-  xchg(lck,0);
+  *lck=0;
 }
 
