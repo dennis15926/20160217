@@ -55,11 +55,11 @@ found:
     return 0;
   }
   sp = p->kstack + KSTACKSIZE;
-  
+
   // Leave room for trap frame.
   sp -= sizeof *p->tf;
   p->tf = (struct trapframe*)sp;
-  
+
   // Set up new context to start executing at forkret,
   // which returns to trapret.
   sp -= 4;
@@ -80,7 +80,7 @@ userinit(void)
 {
   struct proc *p;
   extern char _binary_initcode_start[], _binary_initcode_size[];
-  
+
   p = allocproc();
   initproc = p;
   if((p->pgdir = setupkvm()) == 0)
@@ -108,7 +108,7 @@ int
 growproc(int n)
 {
   uint sz;
-  
+
   sz = proc->sz;
   if(n > 0){
     if((sz = allocuvm(proc->pgdir, sz, sz + n)) == 0)
@@ -153,7 +153,7 @@ fork(void)
     if(proc->ofile[i])
       np->ofile[i] = filedup(proc->ofile[i]);
   np->cwd = idup(proc->cwd);
- 
+
   pid = np->pid;
   np->state = RUNNABLE;
   safestrcpy(np->name, proc->name, sizeof(proc->name));
@@ -183,17 +183,23 @@ clone(void *stack, int size)
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
 
-
-  //Set user stack
-  np->tf->esp = (uint)stack-size;
-
+  //calculate stack size(from function arg #n to esp)
+  uint stackSize = *(uint *)proc->tf->ebp - proc->tf->esp;
+  //move stack pointer to bottom of trapframe
+  np->tf->esp = (uint)stack+size - stackSize;
+  //calculate size needed above ebp
+  uint topSize = *(uint *)proc->tf->ebp - proc->tf->ebp;
+  //move base pointer below topsize
+  np->tf->ebp = (uint)stack+size - topSize;
+  //copy parent processee's stack to child
+  memmove((void *)(np->tf->esp),(const void *)(proc->tf->esp), stackSize);
 
   //file descriptors
   for(i = 0; i < NOFILE; i++)
     if(proc->ofile[i])
-      np->ofile[i] = proc->ofile[i];
-  np->cwd = proc->cwd;
- 
+      np->ofile[i] = filedup(proc->ofile[i]);
+  np->cwd = idup(proc->cwd);
+
   pid = np->pid;
   np->state = RUNNABLE;
   safestrcpy(np->name, proc->name, sizeof(proc->name));
@@ -264,8 +270,11 @@ wait(void)
         pid = p->pid;
         kfree(p->kstack);
         p->kstack = 0;
-        freevm(p->pgdir);
-        p->state = UNUSED;
+        // only free pgdir if zombie process is not a thread of the parent
+        if(p->pgdir != proc->pgdir)
+          freevm(p->pgdir);
+      	p->state = UNUSED;
+
         p->pid = 0;
         p->parent = 0;
         p->name[0] = 0;
@@ -368,12 +377,12 @@ forkret(void)
 
   if (first) {
     // Some initialization functions must be run in the context
-    // of a regular process (e.g., they call sleep), and thus cannot 
+    // of a regular process (e.g., they call sleep), and thus cannot
     // be run from main().
     first = 0;
     initlog();
   }
-  
+
   // Return to "caller", actually trapret (see allocproc).
 }
 
@@ -478,7 +487,7 @@ procdump(void)
   struct proc *p;
   char *state;
   uint pc[10];
-  
+
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->state == UNUSED)
       continue;
@@ -495,5 +504,3 @@ procdump(void)
     cprintf("\n");
   }
 }
-
-
