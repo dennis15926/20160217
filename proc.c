@@ -180,13 +180,13 @@ clone(void *stack, int size)
   np->parent = proc;
   *np->tf = *proc->tf;
 
-  // Clear %eax so that fork returns 0 in the child.
+  // Clear %eax so that clone returns 0 in the child.
   np->tf->eax = 0;
 
 
   //Set user stack
   np->tf->esp = (uint)stack-size;
-
+  //TODO might need to copy parent stack of current function
 
   //file descriptors
   for(i = 0; i < NOFILE; i++)
@@ -264,7 +264,9 @@ wait(void)
         pid = p->pid;
         kfree(p->kstack);
         p->kstack = 0;
-        freevm(p->pgdir);
+        //don't free child pgdir if it is a child thread (shares pgdir)
+        if(p->pgdir != proc->pgdir)
+          freevm(p->pgdir);
         p->state = UNUSED;
         p->pid = 0;
         p->parent = 0;
