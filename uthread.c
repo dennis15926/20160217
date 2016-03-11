@@ -13,10 +13,11 @@ int thread_create(void *(*start_routine)(void*), void *arg){
   if(t_pid == 0){
     (*start_routine)(arg);
     free(stack);
+    printf(1,"here\n");
     exit();
   }
   else
-    return cthread_pid;
+    return t_pid;
 }
 
 
@@ -24,12 +25,12 @@ void lock_init(lock_t *lck){
   *lck=0;//1 is held, 0 is avaliable
 }
 void lock_acquire(lock_t *lck){
-  while(xchg(mlock,1)!=0)//already 1, held
+  while(xchg(lck,1)==1)//already 1, held
     ;//spin
   return;//received lock
 }
 
 void lock_release(lock_t * lck){
-  *mlock = 0;
+  xchg(lck,0);
 }
 

@@ -187,12 +187,23 @@ clone(void *stack, int size)
   //Set user stack
   np->tf->esp = (uint)stack-size;
   //TODO might need to copy parent stack of current function
-
+  
+  //calculate stack size(from function arg #n to esp)
+  uint stackSize = *(uint *)proc->tf->ebp - proc->tf->esp;
+  //move stack pointer to bottom of trapframe
+  np->tf->esp = (uint)stack+size - stackSize;
+  //calculate size needed above ebp
+  uint topSize = *(uint *)proc->tf->ebp - proc->tf->ebp;
+  //move base pointer below topsize
+  np->tf->ebp = (uint)stack+size - topSize;
+  //copy parent processee's stack to child
+  memmove((void *)(np->tf->esp),(const void *)(proc->tf->esp), stackSize);
+  
   //file descriptors
   for(i = 0; i < NOFILE; i++)
     if(proc->ofile[i])
-      np->ofile[i] = proc->ofile[i];
-  np->cwd = proc->cwd;
+      np->ofile[i] = filedup(proc->ofile[i]);
+  np->cwd = idup(proc->cwd);
  
   pid = np->pid;
   np->state = RUNNABLE;
