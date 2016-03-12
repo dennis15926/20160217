@@ -7,6 +7,7 @@ struct proc;
 struct spinlock;
 struct stat;
 struct superblock;
+struct lock_t;
 
 // bio.c
 void            binit(void);

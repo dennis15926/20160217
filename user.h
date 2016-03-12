@@ -1,4 +1,5 @@
 struct stat;
+struct lock_t;
 
 // system calls
 int fork(void);
@@ -40,6 +41,7 @@ int atoi(const char*);
 
 //uthread.c
 int thread_create(void *(*start_routine)(void*), void *);
-void lock_init(lock_t *);
-void lock_release(lock_t *);
-void lock_acquire(lock_t *);
+void lock_init(struct lock_t *);
+void lock_release(struct lock_t *, int);
+void lock_acquire(struct lock_t *, int);
+void get_current_lock(struct lock_t *);
