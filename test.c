@@ -1,8 +1,9 @@
 #include "types.h"
 #include "stat.h"
 #include "user.h"
+#include "uthread.h"
 
-lock_t t;
+struct lock_t t;
 int count;
 int exitThread;
 
@@ -13,17 +14,17 @@ void* update(void* a) {
   int pid = getpid();
   printf(1, "pid %d try to update\n", pid);
   while(1){
-    lock_acquire(&t);
+    lock_acquire(&t, pid);
       if(count>=passNumber){
-        lock_release(&t);
+        lock_release(&t, pid);
         break;
       }
       printf(1, "pid %d gets the lock and starts to update\n", pid);
       count = count + 1;
       printf(1, "pid %d updated finish, current count = %d\n", pid, count);
-    lock_release(&t);
+    lock_release(&t, pid);
   }
-  return 0; 
+  return 0;
 }
 
 int
@@ -37,15 +38,15 @@ main (int argc, char* argv[]) {
   exitThread = 0;
   int i, pid;
 
-  if (argc != 3 || threadNumber < 1 || passNumber < 1) {
-    printf(1, "Input error\nUsage: test numberOfThreads(>0) numberOfRuns(>0)\n");
+  if (argc != 3 || threadNumber < 1 || passNumber < 0) {
+    printf(1, "Input error\nFunction Syntax: test numberOfThreads numberOfRuns\n");
     exit();
   }
-  
+
   for (i = 0; i < threadNumber; i++) {
     thread_create(update, (void*)passNumber);
   }
-   
+
   pid = getpid();
   if (pid == parent) {
     while(exitThread < threadNumber){
@@ -60,4 +61,3 @@ main (int argc, char* argv[]) {
   exitThread = exitThread + 1;
   exit();
 }
-
