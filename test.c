@@ -9,8 +9,8 @@ int exitThread;
 
 void* update(void* a) {
   int passNumber = (int)a;
-  printf(1, "passNumber = %d\n", passNumber);
-  printf(1, "current count = %d\n", count);
+  // printf(1, "passNumber = %d\n", passNumber);
+  // printf(1, "current count = %d\n", count);
   int pid = getpid();
   printf(1, "pid %d try to update\n", pid);
   while(1){
@@ -50,7 +50,7 @@ main (int argc, char* argv[]) {
   pid = getpid();
   if (pid == parent) {
     while(exitThread < threadNumber){
-      printf(1,"exitT %d\n", exitThread);
+      printf(1,"Threads exited amount: %d\n", exitThread);
       if(wait()!=-1){
         exitThread++;
       }
