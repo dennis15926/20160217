@@ -44,7 +44,8 @@ void get_current_lock(struct lock_t *lck){
 void lock_acquire(struct lock_t *lck, int pid){
   int posi = pid%threadAmount;
   lck->lock[posi] = 1;
-  while((lck->lock)[posi] == 1) get_current_lock(lck);
+  get_current_lock(lck)
+  while((lck->lock)[posi] == 1);
   return ; //get the lock
 
   // if(!(lck->lock)[lck->currentLock]){
